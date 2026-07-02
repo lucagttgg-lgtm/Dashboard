@@ -1,5 +1,5 @@
 import type { ElementType } from 'react';
-import { TrendingUp, BarChart2, Home, MessageSquare, PlusCircle, Target } from 'lucide-react';
+import { TrendingUp, BarChart2, Home, MessageSquare, PlusCircle, Target, Send } from 'lucide-react';
 import { ClientData, ActiveView } from '../types';
 
 interface Props {
@@ -47,6 +47,7 @@ export function Sidebar({ clients, activeView, onViewChange, theme, onToggleThem
           {navBtn('Ranking', { type: 'ranking' }, BarChart2)}
           {navBtn('Feedback Hub', { type: 'feedback' }, MessageSquare)}
           {navBtn('Meta Ads', { type: 'meta-ads' }, Target)}
+          {navBtn('Feedback Meta (7 dias)', { type: 'meta-feedback' }, Send)}
           {navBtn('Lançar Resultado', { type: 'data-entry' }, PlusCircle)}
         </div>
 
