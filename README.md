@@ -1,95 +1,116 @@
-# Dashboard de Lojas
+# Painel de Clientes
 
-Dashboard de resultados de vendas por loja: faturamento, metas e evolução mensal.
-Construído com React + TypeScript + Vite, Tailwind CSS, Recharts e Firebase (Firestore).
+Dashboard de acompanhamento de resultados por cliente (contas de anúncio Meta): vendas,
+conversão, ROI, ranking de eficiência e feedback automático — construído com React + TypeScript
++ Vite, Tailwind CSS, Recharts, Framer Motion (`motion`) e Firebase (Firestore).
+
+Sem login (uso pessoal), sem IA — o Feedback Hub usa regras simples em código, não LLM.
 
 ## Stack
 
-- React 19 + TypeScript
-- Vite 6
-- Tailwind CSS 4
-- Recharts (gráficos)
-- Firebase Firestore (dados em tempo real)
-- lucide-react (ícones)
+- React 19 + TypeScript, Vite 6, Tailwind CSS 4
+- Recharts (gráficos), lucide-react (ícones), motion (animações)
+- Firebase Firestore (histórico mensal e anotações em tempo real)
+- Graph API do Meta (Facebook/Instagram Ads) para métricas de anúncio
 
 ## Pré-requisitos
 
-- [Node.js](https://nodejs.org/) 18 ou superior instalado
-- Uma conta no [Firebase](https://console.firebase.google.com/)
+- [Node.js](https://nodejs.org/) 18+
+- Conta no [Firebase](https://console.firebase.google.com/)
+- Um token de acesso da [Graph API do Meta](https://developers.facebook.com/) com permissão `ads_read`
 
-## 1. Criar o projeto no Firebase
+## 1. Configurar o Firebase
 
-1. Acesse o [Console do Firebase](https://console.firebase.google.com/) e crie um novo projeto.
-2. Em **Compilação > Firestore Database**, clique em "Criar banco de dados" (modo produção).
-3. Em **Configurações do projeto > Seus apps**, adicione um app Web e copie as credenciais.
-4. Publique as regras do arquivo [firestore.rules](firestore.rules) (aba **Regras** do Firestore).
+1. Crie um projeto no [Console do Firebase](https://console.firebase.google.com/).
+2. Em **Compilação > Firestore Database**, crie o banco (modo produção).
+3. Publique as regras do arquivo [firestore.rules](firestore.rules) na aba **Regras**.
+   ⚠️ Essas regras ficam abertas (sem autenticação) — ok para uso pessoal; adicione Firebase Auth
+   antes de compartilhar o link com terceiros.
+4. Em **Configurações do projeto > Seus apps**, adicione um app Web e copie as credenciais.
 
-## 2. Configurar o projeto localmente
+## 2. Configurar localmente
 
 ```bash
 npm install
 cp .env.example .env.local
 ```
 
-Edite `.env.local` com as credenciais do seu app Web do Firebase (`VITE_FIREBASE_*`).
+Preencha o `.env.local` com:
+- `VITE_FIREBASE_*`: credenciais do app Web do Firebase
+- `VITE_META_ACCESS_TOKEN`: token da Graph API do Meta (ver seção abaixo)
 
-## 3. Popular dados de exemplo (opcional)
-
-1. Em **Configurações do projeto > Contas de serviço**, clique em "Gerar nova chave privada" e salve o
-   arquivo como `serviceAccountKey.json` na raiz do projeto (já está no `.gitignore`, não será commitado).
-2. Rode:
-
-```bash
-npm run seed
-```
-
-Isso cria 5 lojas de exemplo e 6 meses de resultados de vendas nas coleções `stores` e `salesResults`.
-
-Estrutura dos documentos:
-
-```
-stores/{storeId}
-  name: string
-  region: string
-  monthlyGoal: number
-
-salesResults/{resultId}
-  storeId: string   // referencia o id do documento em "stores"
-  month: string      // formato "YYYY-MM"
-  revenue: number
-```
-
-Você também pode cadastrar esses dados manualmente pelo Console do Firebase.
-
-## 4. Rodar o dashboard
+## 3. Rodar
 
 ```bash
 npm run dev
 ```
-
 Acesse http://localhost:3000
 
-## Scripts disponíveis
+## Clientes cadastrados
 
-- `npm run dev` — inicia o servidor de desenvolvimento
-- `npm run build` — build de produção (pasta `dist`)
-- `npm run preview` — serve o build de produção localmente
+Os 24 clientes (nome, cor, conta de anúncio Meta) estão em
+[src/data/clients.ts](src/data/clients.ts). Cada cliente tem um `fee` (mensalidade de gestão)
+usado no cálculo de ROI — **está zerado para todos, ajuste com os valores reais**.
+
+Ficou pendente um cliente ("Menina Bonita Magazine") cujo ID do Meta veio incorreto na lista
+original — o arquivo já tem um modelo comentado no final mostrando como adicioná-lo.
+
+Para adicionar/editar um cliente, edite o array `CLIENTS_CONFIG` — não precisa mexer em mais
+nada, o resto do app lê esse arquivo automaticamente.
+
+## Lançando resultados mensais
+
+O ROI, Health Score, Ranking e Feedback Hub usam dados **lançados manualmente todo mês** (vendas,
+conversão, ticket médio, verba investida) — não vêm do Meta Ads. Use a tela **"Lançar Resultado"**
+no menu para registrar o mês de cada cliente; os dados ficam salvos no Firestore
+(coleção `clientHistorico`) e atualizam o dashboard em tempo real.
+
+## Meta Ads (Graph API)
+
+A aba "Meta Ads" (global e dentro do detalhe de cada cliente) busca gasto, mensagens, alcance e
+campanhas diretamente da Graph API do Meta, usando o `metaAccountId` de cada cliente em
+`clients.ts` e o token em `VITE_META_ACCESS_TOKEN`.
+
+**Importante:** esse token fica exposto no bundle do navegador (chamada é feita direto do
+frontend, igual ao protótipo original). Funciona para uso pessoal, mas antes de expor a outras
+pessoas o recomendado é mover essas chamadas para um backend (função serverless) que:
+- guarda o token no servidor (nunca no cliente);
+- faz cache das respostas por alguns minutos;
+- evita rate-limit/bloqueio da conta do Meta por chamadas repetidas.
+
+Isso é o próximo passo natural para "garantir 100% os resultados corretos sem risco de bloqueio".
+
+## Scripts
+
+- `npm run dev` — desenvolvimento
+- `npm run build` — build de produção
+- `npm run preview` — serve o build localmente
 - `npm run lint` — checagem de tipos (`tsc --noEmit`)
-- `npm run seed` — popula o Firestore com dados de exemplo
 
-## Estrutura do projeto
+## Estrutura
 
 ```
 src/
-  components/   componentes de UI (cards, gráficos, tabela, estados)
-  config/       inicialização do Firebase
-  hooks/        useDashboardData: busca e agrega os dados do Firestore
-  services/       assinaturas (onSnapshot) das coleções do Firestore
-  types.ts      tipos de domínio (Store, SalesResult, StoreSummary...)
-  utils.ts      formatação de moeda e datas
+  data/clients.ts          identidade dos clientes (nome, cor, fee, conta Meta)
+  services/
+    clientDataService.ts   histórico mensal + anotações no Firestore
+    metaService.ts         chamadas à Graph API do Meta
+  hooks/
+    useClients.ts          combina clients.ts + histórico do Firestore
+    useClientNotes.ts       anotações de feedback por cliente
+  components/
+    ui/                    StatCard, ChartCard, HealthBadge, MonthFilter, ProjecaoCard, RoiPanel
+    views/
+      HomeView             KPIs globais, alertas, lista de clientes
+      ClientDetailView     resultados + ROI + Meta Ads por cliente
+      RankingView          quadrantes de eficiência (mensagens x conversão)
+      FeedbackView         Feedback Hub (regras automáticas, sem IA)
+      MetaAdsView          Meta Ads global (seleciona qualquer cliente)
+      DataEntryView        lançamento mensal de vendas/conversão/verba
 ```
 
-## Deploy
+## Deploy (Vercel)
 
-O build gerado em `dist/` é estático e pode ser publicado em qualquer host (Vercel, Netlify, Firebase
-Hosting etc.). Lembre-se de configurar as variáveis `VITE_FIREBASE_*` também no ambiente de produção.
+O build (`dist/`) é estático. Configure as variáveis de ambiente (`VITE_FIREBASE_*`,
+`VITE_META_ACCESS_TOKEN`) em Vercel → Settings → Environment Variables, senão o dashboard carrega
+em branco/com erro.
