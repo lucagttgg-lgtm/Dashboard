@@ -10,7 +10,7 @@ import { MonthFilter } from '../ui/MonthFilter';
 import { DollarSign, Percent, MessageSquare, TrendingUp, BarChart2, Calendar, Target, RefreshCw, Eye, MousePointer, ThumbsUp, AlertCircle, Users, Info } from 'lucide-react';
 import { formatBRL, calcRoi, ultimoMes } from '../../utils';
 import { DatePreset, MetaInsights, MetaDailyInsight, MetaCampaign, getAccountInsights, getAccountTimeSeries, getCampaigns } from '../../services/metaService';
-import { updateClientNote } from '../../services/clientDataService';
+import { updateClientNote } from '../../services/localStore';
 
 interface Props {
   client: ClientData;
