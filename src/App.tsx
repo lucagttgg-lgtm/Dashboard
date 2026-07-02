@@ -7,6 +7,7 @@ import { ClientDetailView } from './components/views/ClientDetailView';
 import { RankingView } from './components/views/RankingView';
 import { FeedbackView } from './components/views/FeedbackView';
 import { MetaAdsView } from './components/views/MetaAdsView';
+import { MetaFeedbackView } from './components/views/MetaFeedbackView';
 import { DataEntryView } from './components/views/DataEntryView';
 import { useClients } from './hooks/useClients';
 import { useClientNotes } from './hooks/useClientNotes';
@@ -41,6 +42,7 @@ export default function App() {
     : activeView.type === 'ranking' ? 'Ranking'
     : activeView.type === 'feedback' ? 'Feedback Hub'
     : activeView.type === 'meta-ads' ? 'Meta Ads'
+    : activeView.type === 'meta-feedback' ? 'Feedback Meta (7 dias)'
     : activeView.type === 'data-entry' ? 'Lançar Resultado'
     : activeClient?.name ?? '—';
 
@@ -75,6 +77,7 @@ export default function App() {
           {activeView.type === 'ranking' && <RankingView clients={clients} />}
           {activeView.type === 'feedback' && <FeedbackView clients={clients} onClientClick={id => setActiveView({ type: 'client', clientId: id })} />}
           {activeView.type === 'meta-ads' && <MetaAdsView clients={clients} />}
+          {activeView.type === 'meta-feedback' && <MetaFeedbackView clients={clients} />}
           {activeView.type === 'data-entry' && <DataEntryView clients={clients} />}
           {activeView.type === 'client' && activeClient && (
             <ClientDetailView client={activeClient} note={notes[activeClient.id] ?? ''} />
