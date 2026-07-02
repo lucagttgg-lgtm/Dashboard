@@ -1,0 +1,17 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Leitura publica (o dashboard so consulta dados).
+    // As escritas sao feitas pelo script de seed (Admin SDK, que ignora estas regras)
+    // ou pelo console do Firebase. Ajuste para exigir autenticacao antes de ir a producao.
+    match /stores/{storeId} {
+      allow read: if true;
+      allow write: if false;
+    }
+    match /salesResults/{resultId} {
+      allow read: if true;
+      allow write: if false;
+    }
+  }
+}
