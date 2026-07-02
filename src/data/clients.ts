@@ -2,7 +2,9 @@ import { ClientData } from '../types';
 
 // Identidade dos clientes (nome, cor, fee de gestão, conta de anúncio Meta).
 // O histórico mensal (vendas, conversão, verba etc.) NÃO fica aqui — é lançado
-// pela tela "Lançar Resultado" e vive no Firestore (veja services/clientDataService.ts).
+// pela tela "Lançar Resultado" e vive no localStorage do navegador (veja
+// services/localStore.ts). Trocar para um banco real (Firebase, etc.) depois
+// é só reimplementar esse arquivo mantendo a mesma assinatura de funções.
 //
 // fee: valor mensal cobrado do cliente pela gestão (usado no cálculo de ROI).
 //      Está como 0 para todos — ajuste cada um abaixo com o valor real.
