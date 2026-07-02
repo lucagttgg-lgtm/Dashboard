@@ -25,6 +25,7 @@ export type ActiveView =
   | { type: 'ranking' }
   | { type: 'feedback' }
   | { type: 'meta-ads' }
+  | { type: 'meta-feedback' }
   | { type: 'data-entry' }
   | { type: 'client'; clientId: string };
 
