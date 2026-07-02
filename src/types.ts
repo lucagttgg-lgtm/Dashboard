@@ -1,25 +1,42 @@
-export interface Store {
+export interface MonthData {
+  mes: string;
+  chave: string;
+  vendas: number;
+  faturamentoLoja: number;
+  conversao: number;
+  mensagens: number;
+  qtdVendas: number;
+  ticketMedio: number;
+  pctAureFat: number;
+  verba: number;
+}
+
+export interface ClientData {
   id: string;
   name: string;
-  region: string;
-  monthlyGoal: number;
+  color: string;
+  fee: number;
+  metaAccountId?: string;
+  historico: MonthData[];
 }
 
-export interface SalesResult {
-  id: string;
-  storeId: string;
-  /** Formato "YYYY-MM", ex: "2026-07" */
-  month: string;
-  revenue: number;
-}
+export type ActiveView =
+  | { type: 'home' }
+  | { type: 'ranking' }
+  | { type: 'feedback' }
+  | { type: 'meta-ads' }
+  | { type: 'data-entry' }
+  | { type: 'client'; clientId: string };
 
-export interface StoreSummary extends Store {
-  revenue: number;
-  achievement: number;
-}
-
-export interface MonthlyTotal {
-  month: string;
-  revenue: number;
-  goal: number;
-}
+export const EMPTY_MONTH: MonthData = {
+  mes: '',
+  chave: '',
+  vendas: 0,
+  faturamentoLoja: 0,
+  conversao: 0,
+  mensagens: 0,
+  qtdVendas: 0,
+  ticketMedio: 0,
+  pctAureFat: 0,
+  verba: 0,
+};
