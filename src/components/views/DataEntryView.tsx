@@ -2,7 +2,7 @@ import { useState } from 'react';
 import type { FormEvent } from 'react';
 import { PlusCircle, CheckCircle, AlertCircle, RefreshCw } from 'lucide-react';
 import { ClientData, MonthData } from '../../types';
-import { addOrUpdateMonthData } from '../../services/clientDataService';
+import { addOrUpdateMonthData } from '../../services/localStore';
 
 const MONTHS = [
   { label: 'Janeiro', short: 'Jan', num: '01' },
