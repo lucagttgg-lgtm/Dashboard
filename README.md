@@ -1,5 +1,7 @@
 # Painel de Clientes
 
+<!-- deploy trigger -->
+
 Dashboard de acompanhamento de resultados por cliente (contas de anúncio Meta): vendas,
 conversão, ROI, ranking de eficiência e feedback automático — construído com React + TypeScript
 + Vite, Tailwind CSS, Recharts, Framer Motion (`motion`).
