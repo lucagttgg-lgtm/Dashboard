@@ -2,49 +2,46 @@
 
 Dashboard de acompanhamento de resultados por cliente (contas de anúncio Meta): vendas,
 conversão, ROI, ranking de eficiência e feedback automático — construído com React + TypeScript
-+ Vite, Tailwind CSS, Recharts, Framer Motion (`motion`) e Firebase (Firestore).
++ Vite, Tailwind CSS, Recharts, Framer Motion (`motion`).
 
 Sem login (uso pessoal), sem IA — o Feedback Hub usa regras simples em código, não LLM.
+Sem Firebase por enquanto: os dados lançados ficam salvos no **localStorage do navegador**
+(veja a seção abaixo).
 
 ## Stack
 
 - React 19 + TypeScript, Vite 6, Tailwind CSS 4
 - Recharts (gráficos), lucide-react (ícones), motion (animações)
-- Firebase Firestore (histórico mensal e anotações em tempo real)
 - Graph API do Meta (Facebook/Instagram Ads) para métricas de anúncio
 
 ## Pré-requisitos
 
 - [Node.js](https://nodejs.org/) 18+
-- Conta no [Firebase](https://console.firebase.google.com/)
-- Um token de acesso da [Graph API do Meta](https://developers.facebook.com/) com permissão `ads_read`
+- (Opcional) um token de acesso da [Graph API do Meta](https://developers.facebook.com/) com
+  permissão `ads_read`, para a aba "Meta Ads" funcionar
 
-## 1. Configurar o Firebase
-
-1. Crie um projeto no [Console do Firebase](https://console.firebase.google.com/).
-2. Em **Compilação > Firestore Database**, crie o banco (modo produção).
-3. Publique as regras do arquivo [firestore.rules](firestore.rules) na aba **Regras**.
-   ⚠️ Essas regras ficam abertas (sem autenticação) — ok para uso pessoal; adicione Firebase Auth
-   antes de compartilhar o link com terceiros.
-4. Em **Configurações do projeto > Seus apps**, adicione um app Web e copie as credenciais.
-
-## 2. Configurar localmente
+## Configurar e rodar
 
 ```bash
 npm install
-cp .env.example .env.local
-```
-
-Preencha o `.env.local` com:
-- `VITE_FIREBASE_*`: credenciais do app Web do Firebase
-- `VITE_META_ACCESS_TOKEN`: token da Graph API do Meta (ver seção abaixo)
-
-## 3. Rodar
-
-```bash
+cp .env.example .env.local   # opcional — só necessário para a aba Meta Ads
 npm run dev
 ```
 Acesse http://localhost:3000
+
+## Onde ficam os dados (sem Firebase)
+
+O histórico mensal (vendas, conversão, ticket médio, verba) e as anotações de feedback lançados
+pela tela **"Lançar Resultado"** ficam salvos no **localStorage do navegador** — funcionam sem
+nenhuma configuração, mas:
+
+- ficam presos a um navegador/dispositivo (não sincronizam entre computadores ou pessoas);
+- limpar os dados do navegador apaga o que foi lançado.
+
+Isso é intencional para colocar o dashboard no ar rapidamente, sem precisar configurar um banco de
+dados agora. A lógica está isolada em [src/services/localStore.ts](src/services/localStore.ts) —
+quando você quiser dados compartilhados/em tempo real (ex: Firebase Firestore de novo, ou outro
+banco), é só reimplementar esse arquivo mantendo as mesmas funções; nenhuma view precisa mudar.
 
 ## Clientes cadastrados
 
@@ -55,30 +52,17 @@ usado no cálculo de ROI — **está zerado para todos, ajuste com os valores re
 Ficou pendente um cliente ("Menina Bonita Magazine") cujo ID do Meta veio incorreto na lista
 original — o arquivo já tem um modelo comentado no final mostrando como adicioná-lo.
 
-Para adicionar/editar um cliente, edite o array `CLIENTS_CONFIG` — não precisa mexer em mais
-nada, o resto do app lê esse arquivo automaticamente.
-
-## Lançando resultados mensais
-
-O ROI, Health Score, Ranking e Feedback Hub usam dados **lançados manualmente todo mês** (vendas,
-conversão, ticket médio, verba investida) — não vêm do Meta Ads. Use a tela **"Lançar Resultado"**
-no menu para registrar o mês de cada cliente; os dados ficam salvos no Firestore
-(coleção `clientHistorico`) e atualizam o dashboard em tempo real.
-
-## Meta Ads (Graph API)
+## Meta Ads (Graph API) — opcional
 
 A aba "Meta Ads" (global e dentro do detalhe de cada cliente) busca gasto, mensagens, alcance e
 campanhas diretamente da Graph API do Meta, usando o `metaAccountId` de cada cliente em
-`clients.ts` e o token em `VITE_META_ACCESS_TOKEN`.
+`clients.ts` e o token em `VITE_META_ACCESS_TOKEN`. Sem o token configurado, o resto do dashboard
+funciona normalmente — só essa aba mostra erro.
 
 **Importante:** esse token fica exposto no bundle do navegador (chamada é feita direto do
-frontend, igual ao protótipo original). Funciona para uso pessoal, mas antes de expor a outras
-pessoas o recomendado é mover essas chamadas para um backend (função serverless) que:
-- guarda o token no servidor (nunca no cliente);
-- faz cache das respostas por alguns minutos;
-- evita rate-limit/bloqueio da conta do Meta por chamadas repetidas.
-
-Isso é o próximo passo natural para "garantir 100% os resultados corretos sem risco de bloqueio".
+frontend). Funciona para uso pessoal, mas antes de expor a outras pessoas o recomendado é mover
+essas chamadas para um backend (função serverless) que guarda o token no servidor, faz cache das
+respostas e evita rate-limit/bloqueio da conta no Meta.
 
 ## Scripts
 
@@ -93,10 +77,10 @@ Isso é o próximo passo natural para "garantir 100% os resultados corretos sem 
 src/
   data/clients.ts          identidade dos clientes (nome, cor, fee, conta Meta)
   services/
-    clientDataService.ts   histórico mensal + anotações no Firestore
+    localStore.ts          histórico mensal + anotações (localStorage do navegador)
     metaService.ts         chamadas à Graph API do Meta
   hooks/
-    useClients.ts          combina clients.ts + histórico do Firestore
+    useClients.ts          combina clients.ts + histórico salvo localmente
     useClientNotes.ts       anotações de feedback por cliente
   components/
     ui/                    StatCard, ChartCard, HealthBadge, MonthFilter, ProjecaoCard, RoiPanel
@@ -111,6 +95,6 @@ src/
 
 ## Deploy (Vercel)
 
-O build (`dist/`) é estático. Configure as variáveis de ambiente (`VITE_FIREBASE_*`,
-`VITE_META_ACCESS_TOKEN`) em Vercel → Settings → Environment Variables, senão o dashboard carrega
-em branco/com erro.
+O build (`dist/`) é estático e não precisa de nenhuma variável de ambiente para rodar (a não ser
+que você queira a aba Meta Ads funcionando — nesse caso configure `VITE_META_ACCESS_TOKEN` em
+Vercel → Settings → Environment Variables).
